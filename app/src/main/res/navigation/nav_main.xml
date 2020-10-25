@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/github_users">
+    <fragment
+        android:id="@+id/github_users"
+        android:name="com.batzalcancia.githubusers.users.presentation.users.GithubUsersFragment"
+        tools:layout="@layout/fragment_github_users">
+        <action
+            android:id="@+id/action_github_users_to_github_user_details"
+            app:destination="@id/github_user_details"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/github_users" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/github_user_details"
+        android:name="com.batzalcancia.githubusers.users.presentation.userdetails.GithubUserDetailsFragment"
+        tools:layout="@layout/fragment_github_user_details" >
+
+        <argument
+            android:name="githubUser"
+            app:argType="string" />
+    </fragment>
+
+
+</navigation>

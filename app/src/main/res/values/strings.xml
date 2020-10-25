@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Github Users</string>
+    <string name="hint_search">Search</string>
+
+    <string name="container_transition_name">container%s</string>
+    <string name="label_followers">Followers: %d</string>
+    <string name="label_following">Following: %d</string>
+    <string name="hint_notes">Notes</string>
+    <string name="label_save">Save</string>
+    <string name="generic_error_message">Oops, something went wrong.</string>
+    <string name="transition_image">image_%s</string>
+    <string name="transition_username">username_%s</string>
+    <string name="label_name">Name</string>
+    <string name="label_company">Company</string>
+    <string name="label_blog">Blog</string>
+    <string name="label_location">Location</string>
+    <string name="label_public_gists">Public Gists</string>
+    <string name="label_public_repos">Public Repos</string>
+    <string name="label_tap_to_retry">Tap to retry.</string>
+    <string name="label_empty">Oops, list is empty.</string>
+    <string name="connectin_connection_detected">Connection detected!</string>
+    <string name="label_connect">Connect</string>
+</resources>

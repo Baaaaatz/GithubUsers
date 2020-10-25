@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/apb_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/tlb_main"
+            android:layout_width="match_parent"
+            android:minHeight="?actionBarSize"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:title="">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                tools:text="Name" />
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nsv_github_user_details"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/ctl_github_user_details"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/grp_shimmer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                app:constraint_referenced_ids="shm_following, shm_followers" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/img_user_image"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="fitXY"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/view_userimage_divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#cccccc"
+                app:layout_constraintTop_toBottomOf="@id/img_user_image" />
+
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_followers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:alpha="0"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                app:layout_constraintEnd_toStartOf="@id/txt_following"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/view_userimage_divider"
+                tools:text="Followers: 69" />
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shm_followers"
+                android:layout_width="100dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="@id/txt_followers"
+                app:layout_constraintEnd_toEndOf="@id/txt_followers"
+                app:layout_constraintStart_toStartOf="@id/txt_followers"
+                app:layout_constraintTop_toTopOf="@id/txt_followers">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:background="@color/shimmer_loading" />
+
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/txt_following"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="20dp"
+                android:alpha="0"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/txt_followers"
+                app:layout_constraintTop_toBottomOf="@id/view_userimage_divider"
+                tools:text="Following: 420" />
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shm_following"
+                android:layout_width="100dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="@id/txt_following"
+                app:layout_constraintEnd_toEndOf="@id/txt_following"
+                app:layout_constraintStart_toStartOf="@id/txt_following"
+                app:layout_constraintTop_toTopOf="@id/txt_following">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:background="@color/shimmer_loading" />
+
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/crd_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="20dp"
+                android:visibility="invisible"
+                app:cardBackgroundColor="#C2D7D9"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txt_following">
+
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shm_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="12dp"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="20dp"
+                            android:background="@drawable/view_shimmer" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="20dp"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/view_shimmer" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="20dp"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/view_shimmer" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="20dp"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/view_shimmer" />
+
+                    </LinearLayout>
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/txt_details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:alpha="0"
+                    android:lineSpacingExtra="8dp"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    tools:text="Name: Batz\nCompany: tawk.to\nBlog: None" />
+
+                <com.batzalcancia.githubusers.core.views.ErrorView
+                    android:id="@+id/view_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="20dp"
+                android:alpha="0"
+                app:layout_constraintVertical_bias="0.0"
+                android:hint="@string/hint_notes"
+                app:layout_constraintBottom_toTopOf="@id/btn_save_note"
+                app:boxBackgroundColor="#C2D7D9"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/crd_details">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_note"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="top"
+                    android:minHeight="140dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_save_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0"
+                app:layout_constraintVertical_bias="0.0"
+                android:enabled="false"
+                android:text="@string/label_save"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/til_note" />
+
+            <ProgressBar
+                android:id="@+id/prg_save_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@id/btn_save_note"
+                app:layout_constraintEnd_toEndOf="@id/btn_save_note"
+                app:layout_constraintStart_toStartOf="@id/btn_save_note"
+                app:layout_constraintTop_toTopOf="@id/btn_save_note" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
