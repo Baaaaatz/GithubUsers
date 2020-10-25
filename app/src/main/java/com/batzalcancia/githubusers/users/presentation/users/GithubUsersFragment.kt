@@ -11,10 +11,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.transition.TransitionInflater
 import com.batzalcancia.githubusers.ConnectionStateBus
 import com.batzalcancia.githubusers.R
-import com.batzalcancia.githubusers.core.helpers.detectConnection
+import com.batzalcancia.githubusers.core.exceptions.EmptyListException
+import com.batzalcancia.githubusers.core.exceptions.NoConnectionException
 import com.batzalcancia.githubusers.core.helpers.prepareReturnTransition
 import com.batzalcancia.githubusers.core.helpers.px
 import com.batzalcancia.githubusers.core.helpers.textChangesFlow
@@ -46,12 +48,18 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
         GithubUsersAdapter(ItemGithubUserBinding::bind)
     }
 
+    private var isFirst = true
+
+    lateinit var snackbar: Snackbar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Set the sharedElementEnterTransition for sharedElements can have an animation
         sharedElementEnterTransition =
             TransitionInflater.from(requireContext())
                 .inflateTransition(android.R.transition.move)
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -59,6 +67,7 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
 
         viewBinding.shmGithubUsers.startShimmer()
 
+        // Sets insets for the to use end to end design
         ViewCompat.setOnApplyWindowInsetsListener(viewBinding.apbMain) { v, insets ->
             v.updatePadding(top = 0)
             insets
@@ -74,8 +83,9 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
             insets
         }
 
+        val bottom = viewBinding.rcvGithubUsers.bottom
         ViewCompat.setOnApplyWindowInsetsListener(viewBinding.rcvGithubUsers) { v, insets ->
-            v.updatePadding(bottom = 20.px(requireContext()))
+            v.updatePadding(bottom = insets.systemWindowInsetBottom + bottom)
             insets
         }
 
@@ -100,7 +110,7 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
                     githubUsersAdapter.refresh()
                 } else {
                     //Offer searchString to viewmodel to search accordingly
-                    viewModel.editString.offer(it)
+                    viewModel.searchString.offer(it)
                 }
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
@@ -113,44 +123,85 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
     private fun setupOutputs() {
         fetchGithubUsers()
 
-        //To show loading shimmer on start if loading
+        //State listener for adapter
         githubUsersAdapter.addLoadStateListener {
+            // Set states for UI
             viewBinding.shmGithubUsers.isVisible = it.refresh is LoadState.Loading
             viewBinding.rcvGithubUsers.isVisible =
                 it.refresh is LoadState.NotLoading && it.refresh !is LoadState.Error
 
-            viewBinding.viewError.isVisible = it.refresh is LoadState.Error
-
             if (it.refresh is LoadState.Error) {
-                viewBinding.viewError.throwable = (it.refresh as LoadState.Error).error
-                viewBinding.viewError.onRetryClicked = {
-                    githubUsersAdapter.refresh()
-                    fetchGithubUsers()
+                if ((it.refresh as LoadState.Error).error is NoConnectionException) {
+                    viewModel.executeGetCachedGithubUsers()
+                } else {
+                    viewBinding.viewError.throwable = (it.refresh as LoadState.Error).error
+                    viewBinding.viewError.onRetryClicked = {
+                        viewBinding.viewError.isVisible = false
+                        // App will retry to fetch users from remote
+                        fetchGithubUsers()
+                    }
                 }
             }
         }
 
+        viewModel.cachedGithubUsersState.asLiveData().observe(viewLifecycleOwner, EventObserver {
+            //Set Ui State when getting Cached GithubUsers
+            viewBinding.shmGithubUsers.isVisible = it == UiState.Loading
+            viewBinding.rcvGithubUsers.isVisible = it == UiState.Complete
+            when (it) {
+                is UiState.Error -> {
+                    // Setup the Error View when State is Error
+                    viewBinding.viewError.throwable = it.throwable
+                    viewBinding.viewError.onRetryClicked = {
+                        viewBinding.viewError.isVisible = false
+                        // App will retry to fetch users from remote
+                        fetchGithubUsers()
+                    }
+                }
+                is UiState.Empty -> {
+                    viewBinding.viewError.throwable = EmptyListException()
+                }
+            }
+        })
+
+        viewModel.cachedGithubUsers.onEach {
+            // Transforms the list into PagingData for it to be submitted to PagingDataAdapter
+            githubUsersAdapter.submitData(PagingData.from(it))
+        }.launchIn(viewLifecycleOwner.lifecycleScope)
+
         viewModel.searchGithubUsers.onEach {
-            githubUsersAdapter.submitData(it)
+            // Transforms the list into PagingData for it to be submitted to PagingDataAdapter
+            githubUsersAdapter.submitData(PagingData.from(it))
         }.launchIn(viewLifecycleOwner.lifecycleScope)
 
         viewModel.searchGithubUsersState.asLiveData().observe(viewLifecycleOwner, EventObserver {
+            //Set Ui State when getting search results in Cached GithubUsers
             viewBinding.shmGithubUsers.isVisible = it is UiState.Loading
             viewBinding.viewError.isVisible = it is UiState.Empty
         })
 
-        viewLifecycleOwner.lifecycleScope.detectConnection({
-            Snackbar.make(
-                requireView(),
-                getString(R.string.connectin_connection_detected),
-                Snackbar.LENGTH_INDEFINITE
-            ).setAction(getString(R.string.label_connect)) {
-                githubUsersAdapter.refresh()
-                fetchGithubUsers()
-            }.show()
-        }, {
-            viewModel.editString.offer(viewBinding.edtSearch.text.toString())
-        })
+        ConnectionStateBus.on().onEach {
+            if (it) {
+                // show A snackbar to tell the user that the app detects a connection
+                // and prompts user to refresh
+                if (::snackbar.isInitialized) snackbar.dismiss()
+                snackbar = Snackbar.make(
+                    requireView(),
+                    getString(R.string.connection_detected),
+                    Snackbar.LENGTH_INDEFINITE
+                ).setAction(getString(R.string.label_refresh)) {
+                    fetchGithubUsers()
+                }.apply { show() }
+            } else {
+                if (::snackbar.isInitialized) snackbar.dismiss()
+                snackbar = Snackbar.make(
+                    requireView(),
+                    getString(R.string.no_connection_detected),
+                    Snackbar.LENGTH_INDEFINITE
+                ).setAction(getString(android.R.string.ok)) { }.apply { show() }
+                viewModel.executeGetCachedGithubUsers()
+            }
+        }.launchIn(viewLifecycleOwner.lifecycleScope)
 
     }
 

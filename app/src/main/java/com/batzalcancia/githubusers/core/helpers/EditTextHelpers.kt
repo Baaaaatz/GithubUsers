@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.callbackFlow
 fun EditText.textChangesFlow() = callbackFlow {
     val listener = object : TextWatcher {
         override fun afterTextChanged(p0: Editable?) {
+            // Offers a new string to the scope everytime afterTextChanged is called
+            // to be used as flow for it to be observed.
             offer(p0.toString().trim())
         }
 
@@ -22,8 +24,10 @@ fun EditText.textChangesFlow() = callbackFlow {
         override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
     }
 
+    //Adds the listener to the EditText
     addTextChangedListener(listener)
 
+    // Removes the listener to prevent further leak
     awaitClose {
         removeTextChangedListener(listener)
     }

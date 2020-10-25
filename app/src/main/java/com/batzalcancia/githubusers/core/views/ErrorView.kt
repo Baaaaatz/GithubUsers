@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import coil.load
 import com.batzalcancia.githubusers.R
+import com.batzalcancia.githubusers.core.exceptions.EmptyListException
 import com.batzalcancia.githubusers.core.exceptions.NoConnectionException
 import com.batzalcancia.githubusers.databinding.ViewErrorBinding
 
@@ -23,7 +24,12 @@ class ErrorView @JvmOverloads constructor(
         set(value) {
             field = value
             viewBinding.imgError.load(
-                if (value is NoConnectionException) R.drawable.svg_no_connection else R.drawable.svg_error
+                when (value) {
+                    is NoConnectionException -> R.drawable.svg_no_connection
+                    is EmptyListException -> R.drawable.svg_empty
+                    else -> R.drawable.svg_error
+                }
+
             )
             viewBinding.txtErrorMessage.text =
                 value?.localizedMessage ?: context.getString(R.string.generic_error_message)

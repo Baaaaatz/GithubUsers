@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class GithubUserLocalUpdate(
+data class GithubUserLocalDetailsUpdate(
     @PrimaryKey
     val id: Int,
     @ColumnInfo(name = "company")

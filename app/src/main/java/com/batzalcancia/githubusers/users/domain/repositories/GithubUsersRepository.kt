@@ -4,7 +4,7 @@ import androidx.paging.PagingSource
 import com.batzalcancia.githubusers.users.data.entities.GithubUser
 import com.batzalcancia.githubusers.users.data.entities.GithubUserDetails
 import com.batzalcancia.githubusers.users.data.local.entities.GithubUserLocal
-import com.batzalcancia.githubusers.users.data.local.entities.GithubUserLocalUpdate
+import com.batzalcancia.githubusers.users.data.local.entities.GithubUserLocalDetailsUpdate
 import com.batzalcancia.githubusers.users.data.local.entities.GithubUserNoteLocalUpdate
 
 interface GithubUsersRepository {
@@ -19,7 +19,8 @@ interface GithubUsersRepository {
     suspend fun getNextKey(): Int
 
     suspend fun updateNote(githubUserNoteLocalUpdate: GithubUserNoteLocalUpdate)
-    suspend fun updateGithubUser(githubUserLocalUpdate: GithubUserLocalUpdate)
+    suspend fun updateGithubUser(githubUserLocalDetailsUpdate: GithubUserLocalDetailsUpdate)
 
     suspend fun searchGithubUser(searchString: String): List<GithubUserLocal>
+    suspend fun getCachedGithubUser(): List<GithubUserLocal>
 }

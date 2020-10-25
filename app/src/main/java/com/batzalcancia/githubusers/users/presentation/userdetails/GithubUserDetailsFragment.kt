@@ -1,9 +1,8 @@
 package com.batzalcancia.githubusers.users.presentation.userdetails
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.ImageView
+import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -17,8 +16,8 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.ui.setupWithNavController
 import androidx.transition.Transition
 import androidx.transition.TransitionInflater
+import com.batzalcancia.githubusers.ConnectionStateBus
 import com.batzalcancia.githubusers.R
-import com.batzalcancia.githubusers.core.exceptions.NoConnectionException
 import com.batzalcancia.githubusers.core.helpers.*
 import com.batzalcancia.githubusers.core.presentation.enums.UiState
 import com.batzalcancia.githubusers.core.utils.EventObserver
@@ -31,7 +30,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.net.UnknownHostException
 
 @AndroidEntryPoint
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -41,14 +39,18 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
 
     private val viewModel: GithubUserDetailsViewModel by viewModels()
 
+    // Instantiate navArgs from previous fragment
     private val githubUserDetailsFragmentArgs by navArgs<GithubUserDetailsFragmentArgs>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val githubDetails = githubUserDetailsFragmentArgs.githubUser.fromJson<GithubUserLocal>()
+        // Set the sharedElementEnterTransition for sharedElements can have an animation
         sharedElementEnterTransition =
             TransitionInflater.from(requireContext())
                 .inflateTransition(android.R.transition.move)
+                // Added a listener on the transition to make better effects of
+                // Showing loading after the animation
                 .addListener(object : Transition.TransitionListener {
                     override fun onTransitionStart(transition: Transition) {
                         startShimmer()
@@ -71,13 +73,20 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
         super.onViewCreated(view, savedInstanceState)
         val githubDetails = githubUserDetailsFragmentArgs.githubUser.fromJson<GithubUserLocal>()
         viewBinding = FragmentGithubUserDetailsBinding.bind(view)
+        // Sets Fragment with navigation controller for backstacks
         viewBinding.tlbMain.setupWithNavController(findNavController())
+
+        // sets imgUserImage's transitionName
+        // transitionName is Dynamic because its from a recyclerview
         viewBinding.imgUserImage.setContainerTransition(
             getString(
                 R.string.transition_image,
                 githubDetails.image
             )
         )
+
+        // sets imgUserImage's transitionName
+        // transitionName is Dynamic because its from a recyclerview
         viewBinding.txtUsername.setContainerTransition(
             getString(
                 R.string.transition_username,
@@ -86,7 +95,10 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
         )
 
         viewBinding.edtNote.setText(githubDetails.note)
+        viewModel.setOriginalNote(githubDetails.note ?: "")
 
+
+        // Sets insets for the to use end to end design
         ViewCompat.setOnApplyWindowInsetsListener(viewBinding.tlbMain) { v, insets ->
             v.updatePadding(top = insets.systemWindowInsetTop)
             insets
@@ -97,22 +109,16 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
             insets
         }
 
+        val bottom = viewBinding.nsvGithubUserDetails.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(viewBinding.nsvGithubUserDetails) { v, insets ->
-            v.updatePadding(bottom = 0)
+            v.updatePadding(bottom = insets.systemWindowInsetBottom + bottom)
             insets
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(viewBinding.ctlGithubUserDetails) { v, insets ->
-            v.updatePadding(bottom = insets.systemWindowInsetBottom)
-            insets
-        }
-
-        viewBinding.imgUserImage.post {
-            viewBinding.imgUserImage.loadImageFromUrl(
-                githubDetails.image,
-                isCircle = false
-            )
-        }
+        viewBinding.imgUserImage.loadImageFromUrl(
+            githubDetails.image,
+            isCircle = false
+        )
 
         viewBinding.tlbMain.post {
             viewBinding.txtUsername.text = githubDetails.username
@@ -124,20 +130,20 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         viewBinding.btnSaveNote.setOnClickListener {
-
             viewModel.onSaveClicked()
         }
+
 
         viewBinding.viewError.onRetryClicked = {
             viewModel.onLoad(githubDetails.username)
         }
 
-        viewBinding.root.requestApplyInsets()
-
         setupOutputs()
     }
 
     private fun setupOutputs() {
+        // Observes userDetails from local
+        // The data is from local because it is saved to local first before emitting the data
         viewModel.userDetails.onEach {
             viewBinding.txtFollowers.text = getString(R.string.label_followers, it.followers)
             viewBinding.txtFollowing.text = getString(R.string.label_following, it.following)
@@ -152,9 +158,10 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
             viewBinding.txtDetails.text = details.joinToString("\n") { pairDetails ->
                 "${pairDetails.first}: ${pairDetails.second}"
             }
-
         }.launchIn(viewLifecycleOwner.lifecycleScope)
 
+
+        // Set states for UI
         viewModel.userDetailsState.onEach {
             if (it == UiState.Loading) {
                 startShimmer()
@@ -176,6 +183,7 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
                 viewBinding.viewError.throwable = it.throwable
             }
 
+            // Show or hide ui depending on what state it is
             viewBinding.edtNote.isEnabled = it != UiState.Loading
             viewBinding.tilNote.isVisible = it != UiState.Loading
             viewBinding.btnSaveNote.isVisible = it != UiState.Loading
@@ -184,6 +192,7 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
             viewBinding.shmDetails.isVisible = it == UiState.Loading
         }.launchIn(viewLifecycleOwner.lifecycleScope)
 
+        // observes if the has error if not the save button will enable
         viewModel.noteHasError.onEach {
             viewBinding.btnSaveNote.isEnabled = !it
         }.launchIn(viewLifecycleOwner.lifecycleScope)
@@ -193,12 +202,15 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
             viewBinding.prgSaveNote.isVisible = it == UiState.Loading
 
             if (it == UiState.Complete) {
+                // show A snackbar to tell the user that the app saved the note for the user
                 Snackbar.make(
                     requireView(),
                     "Note about this user is saved!",
                     Snackbar.LENGTH_LONG
                 ).show()
             } else if (it is UiState.Error) {
+                // show A snackbar to tell the user that the app
+                // failed to save the note for the user
                 Snackbar.make(
                     requireView(),
                     it.throwable.localizedMessage ?: getString(R.string.generic_error_message),
@@ -207,21 +219,26 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
             }
         })
 
-        viewLifecycleOwner.lifecycleScope.detectConnection({
-            Snackbar.make(
-                requireView(),
-                getString(R.string.connectin_connection_detected),
-                Snackbar.LENGTH_INDEFINITE
-            ).setAction(getString(R.string.label_connect)) {
-                viewModel.onLoad(githubUserDetailsFragmentArgs.githubUser.fromJson<GithubUserLocal>().username)
-            }.show()
-        }, {
-            Snackbar.make(
-                requireView(),
-                "Connection Lost.",
-                Snackbar.LENGTH_LONG
-            ).show()
-        })
+        ConnectionStateBus.on().onEach {
+            if (it) {
+                // show A snackbar to tell the user that the app detects a connection
+                // and prompts user to refresh
+                Snackbar.make(
+                    requireView(),
+                    getString(R.string.connection_detected),
+                    Snackbar.LENGTH_INDEFINITE
+                ).setAction(getString(R.string.label_refresh)) {
+                    viewModel.onLoad(githubUserDetailsFragmentArgs.githubUser.fromJson<GithubUserLocal>().username)
+                }.show()
+            } else {
+                // show A snackbar to tell the user that the app detects a disconnection
+                Snackbar.make(
+                    requireView(),
+                    "Connection Lost.",
+                    Snackbar.LENGTH_INDEFINITE
+                ).setAction(getString(android.R.string.ok)) { }.apply { show() }
+            }
+        }
     }
 
     private fun startShimmer() {

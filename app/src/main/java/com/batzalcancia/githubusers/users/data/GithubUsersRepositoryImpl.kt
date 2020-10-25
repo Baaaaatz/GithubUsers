@@ -3,7 +3,7 @@ package com.batzalcancia.githubusers.users.data
 import com.batzalcancia.githubusers.users.data.local.GithubUsersLocalSource
 import com.batzalcancia.githubusers.users.data.local.dao.GithubUsersDao
 import com.batzalcancia.githubusers.users.data.local.entities.GithubUserLocal
-import com.batzalcancia.githubusers.users.data.local.entities.GithubUserLocalUpdate
+import com.batzalcancia.githubusers.users.data.local.entities.GithubUserLocalDetailsUpdate
 import com.batzalcancia.githubusers.users.data.local.entities.GithubUserNoteLocalUpdate
 import com.batzalcancia.githubusers.users.data.remote.GithubUsersRemoteSource
 import com.batzalcancia.githubusers.users.domain.repositories.GithubUsersRepository
@@ -45,14 +45,20 @@ class GithubUsersRepositoryImpl @Inject constructor(
             githubUsersDao.updateNote(githubUserNoteLocalUpdate)
         }
 
-    override suspend fun updateGithubUser(githubUserLocalUpdate: GithubUserLocalUpdate) =
+    override suspend fun updateGithubUser(githubUserLocalDetailsUpdate: GithubUserLocalDetailsUpdate) =
         withContext(Dispatchers.IO) {
-            githubUsersDao.updateGithubUser(githubUserLocalUpdate)
+            githubUsersDao.saveGithubUserDetailsLocally(githubUserLocalDetailsUpdate)
         }
 
     override suspend fun searchGithubUser(searchString: String) =
         withContext(Dispatchers.IO) {
             githubUsersDao.searchGithubUser(searchString)
         }
+
+    override suspend fun getCachedGithubUser(): List<GithubUserLocal> =
+        withContext(Dispatchers.IO) {
+            githubUsersDao.getAllCachedGithubUsers()
+        }
+
 
 }

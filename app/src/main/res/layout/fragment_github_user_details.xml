@@ -15,9 +15,9 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/tlb_main"
             android:layout_width="match_parent"
-            android:minHeight="?actionBarSize"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:minHeight="?actionBarSize"
             app:title="">
 
             <com.google.android.material.textview.MaterialTextView
@@ -38,8 +38,9 @@
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nsv_github_user_details"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -69,7 +70,6 @@
                 android:layout_height="1dp"
                 android:background="#cccccc"
                 app:layout_constraintTop_toBottomOf="@id/img_user_image" />
-
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/txt_followers"
@@ -209,18 +209,17 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="20dp"
                 android:alpha="0"
-                app:layout_constraintVertical_bias="0.0"
                 android:hint="@string/hint_notes"
-                app:layout_constraintBottom_toTopOf="@id/btn_save_note"
                 app:boxBackgroundColor="#C2D7D9"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/crd_details">
+                app:layout_constraintTop_toBottomOf="@id/crd_details"
+                app:layout_constraintVertical_bias="0.0">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edt_note"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="top"
                     android:minHeight="140dp" />
 
@@ -233,13 +232,13 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="24dp"
                 android:alpha="0"
-                app:layout_constraintVertical_bias="0.0"
                 android:enabled="false"
                 android:text="@string/label_save"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/til_note" />
+                app:layout_constraintTop_toBottomOf="@id/til_note"
+                app:layout_constraintVertical_bias="0.0" />
 
             <ProgressBar
                 android:id="@+id/prg_save_note"
