@@ -129,6 +129,9 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
             viewBinding.rcvGithubUsers.isVisible =
                 it.refresh is LoadState.NotLoading && it.refresh !is LoadState.Error
 
+
+            viewBinding.viewError.isVisible = it.refresh is LoadState.Error
+
             if (it.refresh is LoadState.Error) {
                 if ((it.refresh as LoadState.Error).error is NoConnectionException) {
                     viewModel.executeGetCachedGithubUsers()
@@ -147,6 +150,9 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
             //Set Ui State when getting Cached GithubUsers
             viewBinding.shmGithubUsers.isVisible = it == UiState.Loading
             viewBinding.rcvGithubUsers.isVisible = it == UiState.Complete
+
+            viewBinding.viewError.isVisible = it is UiState.Error
+
             when (it) {
                 is UiState.Error -> {
                     // Setup the Error View when State is Error
@@ -199,6 +205,7 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
     private fun fetchGithubUsers() {
         //refreshes list on fetch
         githubUsersAdapter.refresh()
+        viewModel.refreshList()
         viewModel.githubUsersPagingData.onEach {
             githubUsersAdapter.submitData(it)
         }.launchIn(viewLifecycleOwner.lifecycleScope)

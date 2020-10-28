@@ -13,10 +13,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 
@@ -25,10 +22,10 @@ class GithubUsersViewModel @ViewModelInject constructor(
     private val getLocalGithubUsers: GetLocalGithubUsers,
     private val searchGithubUser: SearchGithubUser,
     private val getCachedGithubUsers: GetCachedGithubUsers,
-    getGithubUsers: GetGithubUsers,
-    insertAllGithubUsers: InsertAllGithubUsers,
-    getUsersNextKey: GetUsersNextKey,
-    setUsersNextKey: SetUsersNextKey
+    private val getGithubUsers: GetGithubUsers,
+    private val insertAllGithubUsers: InsertAllGithubUsers,
+    private val getUsersNextKey: GetUsersNextKey,
+    private val setUsersNextKey: SetUsersNextKey
 ) : ViewModel() {
 
     private val _searchGithubUsersState = ConflatedBroadcastChannel<Event<UiState>>()
@@ -80,16 +77,15 @@ class GithubUsersViewModel @ViewModelInject constructor(
 
     }
 
-
     // Remote Mediator orchestrates the data flow of the paging which includes
     // Getting data from local database (room) to present into the UI
     // When local database has no items left the Remote Mediator will
     // Call the remote API to add more items in the local database (room)
-    val githubUsersPagingData =
+    var githubUsersPagingData =
         Pager(
             PagingConfig(30, enablePlaceholders = false, initialLoadSize = 30),
             initialKey = 0,
-            remoteMediator =  GithubUsersRemoteMediator(
+            remoteMediator = GithubUsersRemoteMediator(
                 getGithubUsers,
                 insertAllGithubUsers,
                 getUsersNextKey,
@@ -97,5 +93,20 @@ class GithubUsersViewModel @ViewModelInject constructor(
             ),
             pagingSourceFactory = { getLocalGithubUsers() }
         ).flow.cachedIn(viewModelScope)
+
+    fun refreshList() {
+        githubUsersPagingData =
+            Pager(
+                PagingConfig(30, enablePlaceholders = false, initialLoadSize = 30),
+                initialKey = 0,
+                remoteMediator = GithubUsersRemoteMediator(
+                    getGithubUsers,
+                    insertAllGithubUsers,
+                    getUsersNextKey,
+                    setUsersNextKey
+                ),
+                pagingSourceFactory = { getLocalGithubUsers() }
+            ).flow.cachedIn(viewModelScope)
+    }
 
 }
