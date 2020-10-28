@@ -15,5 +15,4 @@ object ConnectionStateBus {
 
     fun on() = isConnectedBus
         .asFlow()
-        .drop(1)
 }

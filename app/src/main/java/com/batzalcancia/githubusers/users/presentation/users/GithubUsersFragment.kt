@@ -60,7 +60,6 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
                 .inflateTransition(android.R.transition.move)
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewBinding = FragmentGithubUsersBinding.bind(view)
@@ -182,16 +181,8 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
 
         ConnectionStateBus.on().onEach {
             if (it) {
-                // show A snackbar to tell the user that the app detects a connection
-                // and prompts user to refresh
-                if (::snackbar.isInitialized) snackbar.dismiss()
-                snackbar = Snackbar.make(
-                    requireView(),
-                    getString(R.string.connection_detected),
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction(getString(R.string.label_refresh)) {
-                    fetchGithubUsers()
-                }.apply { show() }
+                // Refreshes list upon detecting a connection
+                fetchGithubUsers()
             } else {
                 if (::snackbar.isInitialized) snackbar.dismiss()
                 snackbar = Snackbar.make(
@@ -206,6 +197,8 @@ class GithubUsersFragment : Fragment(R.layout.fragment_github_users) {
     }
 
     private fun fetchGithubUsers() {
+        //refreshes list on fetch
+        githubUsersAdapter.refresh()
         viewModel.githubUsersPagingData.onEach {
             githubUsersAdapter.submitData(it)
         }.launchIn(viewLifecycleOwner.lifecycleScope)

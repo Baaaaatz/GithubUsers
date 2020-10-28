@@ -221,15 +221,8 @@ class GithubUserDetailsFragment : Fragment(R.layout.fragment_github_user_details
 
         ConnectionStateBus.on().onEach {
             if (it) {
-                // show A snackbar to tell the user that the app detects a connection
-                // and prompts user to refresh
-                Snackbar.make(
-                    requireView(),
-                    getString(R.string.connection_detected),
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction(getString(R.string.label_refresh)) {
-                    viewModel.onLoad(githubUserDetailsFragmentArgs.githubUser.fromJson<GithubUserLocal>().username)
-                }.show()
+                // Refreshes the page when app detects a connection
+                viewModel.onLoad(githubUserDetailsFragmentArgs.githubUser.fromJson<GithubUserLocal>().username)
             } else {
                 // show A snackbar to tell the user that the app detects a disconnection
                 Snackbar.make(
