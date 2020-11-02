@@ -2,7 +2,7 @@
 An app created to fetch Github Users
 
 
-## Libraries and Tools Used
+## Libraries
 
 - Kotlin
 - AndroidX
@@ -17,18 +17,6 @@ An app created to fetch Github Users
 - Kotlin Coroutines
 - Coil
 - Dagger Hilt
-
-## Project Structure
-
-This project is built using Clean Architecture and is structured in the following way:
-
-**presentation** - contains Activities/Fragments and their corresponding ViewModels and Adapters for the presentation layer
-
-**domain** - contains entities and use cases for the **presentation** layer to access data from the **data** layer
-
-**data** -  contains data models and repositories for getting data
-
-**di** - contains classes for dependency injection. In this case, Dagger's components and modules.
 
 ## Authors
 
